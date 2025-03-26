@@ -1,4 +1,4 @@
-package com.client;
+package com.curlbaby;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
 
-public class CLIentApp {
+public class CurlBabyApp {
     public static void main(String[] args) {
         printWelcomeScreen();
         
@@ -26,7 +26,7 @@ public class CLIentApp {
             
             switch (command) {
                 case "exit":
-                    System.out.println("\n\033[1;32m✓ Thank you for using SimpleHTTP CLI. Goodbye!\033[0m");
+                    System.out.println("\n\033[1;32m✓ Thank you for using Curl Baby. Goodbye!\033[0m");
                     System.exit(0);
                     break;
                 case "help":
@@ -50,7 +50,7 @@ public class CLIentApp {
         System.out.println("\033[1;36m");
         System.out.println("┌───────────────────────────────────────────┐");
         System.out.println("│                                           │");
-        System.out.println("│           🌐 SimpleHTTP CLI 🌐            │");
+        System.out.println("│           🌐  Curl Baby  🌐               │");
         System.out.println("│                                           │");
         System.out.println("│       A lightweight HTTP GET client       │");
         System.out.println("│                                           │");
