@@ -1,7 +1,6 @@
 package com.curlbaby;
 
 public class UIManager {
-    // ANSI color codes
     private static final String RESET = "\033[0m";
     private static final String BOLD_CYAN = "\033[1;36m";
     private static final String BOLD_GREEN = "\033[1;32m";
@@ -14,9 +13,9 @@ public class UIManager {
         System.out.println(BOLD_CYAN);
         System.out.println("┌───────────────────────────────────────────────────┐");
         System.out.println("│                                                   │");
-        System.out.println("│                 🌐  Curl Baby  🌐                 │");
+        System.out.println("│                 🌐  cUrlBaby  🌐                  │");
         System.out.println("│                                                   │");
-        System.out.println("│          A stylish HTTP client for devs           │");
+        System.out.println("│          Lighweight API Testing & Sharing         │");
         System.out.println("│                                                   │");
         System.out.println("│        Simple. Elegant. Gets the job done.        │");
         System.out.println("│                                                   │");
@@ -33,6 +32,7 @@ public class UIManager {
     public void printHelp() {
         System.out.println("\n" + BOLD_YELLOW + "📚 Available Commands:" + RESET);
         System.out.println("  " + BOLD_CYAN + "get <url>" + RESET + " - Execute a GET request to the specified URL");
+        System.out.println("  " + BOLD_CYAN + "post <url>" + RESET + " - Execute a POST request to the specified URL (BETA)");
         System.out.println("  " + BOLD_CYAN + "help" + RESET + "      - Show this help message");
         System.out.println("  " + BOLD_CYAN + "exit" + RESET + "      - Exit the application");
     }
@@ -45,8 +45,18 @@ public class UIManager {
         System.out.println(BOLD_RED + "✗ " + message + RESET);
     }
     
-    public void printRequestInfo(String url) {
-        System.out.println("\n" + BOLD_BLUE + "🔄 Executing GET request to " + url + RESET);
+    public void printRequestInfo(String url, String type) {
+        switch (type) {
+            case "get":
+            System.out.println("\n" + BOLD_BLUE + "🔄 Executing GET request to " + url + RESET);
+                break;
+            case "post":
+            System.out.println("\n" + BOLD_BLUE + "🔄 Executing POST request to " + url + RESET);
+            break;
+            default:
+                break;
+        }
+       
     }
     
     public void printStatusInfo(int status, String message) {

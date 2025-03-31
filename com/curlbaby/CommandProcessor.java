@@ -25,6 +25,13 @@ public class CommandProcessor {
                     requestHandler.executeGetRequest(argument);
                 }
                 break;
+            case "post": 
+                if (argument.isEmpty()) {
+                    uiManager.printError("Usage: post <url>");
+                } else {
+                    requestHandler.executePostRequest(argument);
+                }
+                break;
             default:
                 uiManager.printError("Unknown command: " + command);
                 System.out.println("Type 'help' for available commands");
