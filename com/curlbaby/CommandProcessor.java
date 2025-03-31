@@ -32,6 +32,20 @@ public class CommandProcessor {
                     requestHandler.executePostRequest(argument);
                 }
                 break;
+            case "put":
+                if (argument.isEmpty()) {
+                    uiManager.printError("Usage: put <url>");
+                } else {
+                    requestHandler.executePutRequest(argument);
+                }
+                break;
+            case "delete":
+                if (argument.isEmpty()) {
+                    uiManager.printError("Usage: delete <url>");
+                } else {
+                    requestHandler.executeDeleteRequest(argument);
+                }
+                break;
             default:
                 uiManager.printError("Unknown command: " + command);
                 System.out.println("Type 'help' for available commands");
