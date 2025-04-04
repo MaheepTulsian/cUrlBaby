@@ -1,14 +1,17 @@
-# Curl Baby
+# cUrlBaby
 
-A lightweight HTTP GET client with a colorful CLI interface.
+A lightweight HTTP client with a colorful CLI interface for API testing.
 
 ## Features
 
-- Simple GET request execution
+- HTTP request execution (GET, POST, PUT, DELETE)
 - Beautiful command-line interface with colors
 - Response headers display
 - JSON response formatting
 - Error handling
+- API collections management
+- Environment variables support
+- Authentication handling
 
 ## Installation
 
@@ -34,7 +37,11 @@ curlbaby/
         └── java/
             └── com/
                 └── curlbaby/
-                    └── CurlBabyApp.java
+                    ├── CurlBabyApp.java
+                    ├── CommandProcessor.java
+                    ├── HttpRequestHandler.java
+                    ├── JsonFormatter.java
+                    └── UIManager.java
 ```
 
 ## Usage
@@ -50,6 +57,8 @@ Run the application:
 - `get <url>` - Execute a GET request to the specified URL
   - Example: `get api.example.com/users`
   - Note: `http://` will be added automatically if not included in the URL
+- `post <url>` - Execute a POST request to the specified URL
+  - Example: `post api.example.com/users`
 - `help` - Display available commands
 - `exit` - Exit the application
 
@@ -76,3 +85,7 @@ Run the application:
   ...
 }
 ```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

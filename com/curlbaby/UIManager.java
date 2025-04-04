@@ -47,7 +47,7 @@ public class UIManager {
     }
     
     public void printExitMessage() {
-        System.out.println("\n" + BOLD_GREEN + "✓ Thank you for using CLIent. Goodbye!" + RESET);
+        System.out.println("\n" + BOLD_GREEN + "✓ Thank you for using cUrlBaby. Goodbye!" + RESET);
     }
     
     public void printError(String message) {
