@@ -13,34 +13,28 @@ import java.util.Scanner;
 public class HttpRequestHandler {
     private final UIManager uiManager;
     private final JsonFormatter jsonFormatter;
+    private final Scanner scanner;
     private final ConsoleReader consoleReader;
-    private final Scanner fallbackScanner; // Fallback for environments without arrow key support
-    
-    private Request currentRequest;
-    private boolean useConsoleReader;
+    private final boolean useConsoleReader;
     
     public HttpRequestHandler(UIManager uiManager) {
         this.uiManager = uiManager;
         this.jsonFormatter = new JsonFormatter();
+        this.scanner = new Scanner(System.in);
         this.consoleReader = new ConsoleReader(uiManager);
-        this.fallbackScanner = new Scanner(System.in);
         this.useConsoleReader = isUnixTerminal();
     }
     
-    /**
-     * Read a line of input using the appropriate reader
-     */
     private String readLine() {
         if (useConsoleReader) {
             return consoleReader.readLine();
         } else {
-            return fallbackScanner.nextLine();
+            return scanner.nextLine();
         }
     }
     
     public void executeGetRequest(String urlString) {
         Request request = new Request("GET", urlString);
-        currentRequest = request;
         executeRequest(request);
     }
 
@@ -58,13 +52,13 @@ public class HttpRequestHandler {
         String bodyInput = readLine().trim();
         
         if (bodyInput.equalsIgnoreCase("json")) {
-            String jsonBody = promptForJsonBody();
+            SimpleJsonEditor editor = new SimpleJsonEditor(uiManager, scanner, jsonFormatter);
+            String jsonBody = editor.edit();
             request.setBody(jsonBody);
         } else if (!bodyInput.isEmpty()) {
             request.setBody(bodyInput);
         }
         
-        // Ask for additional headers
         boolean addingHeaders = true;
         while (addingHeaders) {
             uiManager.printInputPrompt("Add header? (y/n):");
@@ -80,7 +74,6 @@ public class HttpRequestHandler {
             }
         }
         
-        currentRequest = request;
         executeRequest(request);
     }
     
@@ -101,7 +94,8 @@ public class HttpRequestHandler {
         String bodyInput = readLine().trim();
         
         if (bodyInput.equalsIgnoreCase("json")) {
-            String jsonBody = promptForJsonBody();
+            SimpleJsonEditor editor = new SimpleJsonEditor(uiManager, scanner, jsonFormatter);
+            String jsonBody = editor.edit();
             request.setBody(jsonBody);
         } else if (!bodyInput.isEmpty()) {
             request.setBody(bodyInput);
@@ -122,33 +116,12 @@ public class HttpRequestHandler {
             }
         }
         
-        currentRequest = request;
         executeRequest(request);
     }
     
     public void executeDeleteRequest(String urlString) {
         Request request = new Request("DELETE", urlString);
-        currentRequest = request;
         executeRequest(request);
-    }
-    
-    private String promptForJsonBody() {
-        uiManager.printInfo("Enter JSON body (type '.' on a new line to finish):");
-        StringBuilder json = new StringBuilder();
-        String line;
-        while (!(line = readLine()).equals(".")) {
-            json.append(line).append("\n");
-        }
-        
-        try {
-            // Try to format it to validate
-            String formattedJson = jsonFormatter.formatJson(json.toString());
-            uiManager.printSuccess("JSON validated successfully");
-            return formattedJson;
-        } catch (Exception e) {
-            uiManager.printWarning("JSON might be invalid: " + e.getMessage());
-            return json.toString();
-        }
     }
     
     private void executeRequest(Request request) {
@@ -249,14 +222,11 @@ public class HttpRequestHandler {
         }
     }
     
-    /**
-     * Check if we're running in a Unix-like terminal
-     */
     private boolean isUnixTerminal() {
         String osName = System.getProperty("os.name").toLowerCase();
         return osName.contains("nix") || osName.contains("nux") || osName.contains("mac");
     }
-     
+    
     public static class Request {
         private String method;
         private String url;

@@ -31,26 +31,26 @@ public class ConsoleReader {
     public void startKeyListener() {
         Thread keyListenerThread = new Thread(() -> {
             try {
-                String[] cmd = {"/bin/sh", "-c", "stty raw -echo </dev/tty"};
-                Runtime.getRuntime().exec(cmd).waitFor();
+                // Set terminal to raw mode at the start
+                String[] rawCmd = {"/bin/sh", "-c", "stty raw -echo </dev/tty"};
+                Runtime.getRuntime().exec(rawCmd).waitFor();
                 
                 while (isReading) {
-                    int key = System.in.read();
-                    keyPressQueue.put(key);
-                     
-                    if (key == ENTER) {
-                        String[] resetCmd = {"/bin/sh", "-c", "stty sane </dev/tty"};
-                        Runtime.getRuntime().exec(resetCmd).waitFor();
-                         
-                        Thread.sleep(100);
-                         
-                        Runtime.getRuntime().exec(cmd).waitFor();
+                    try {
+                        int key = System.in.read();
+                        if (key != -1) {  // Only process valid key presses
+                            keyPressQueue.put(key);
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Error reading input: " + e.getMessage());
+                        break;
                     }
                 }
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
                 System.err.println("Error in key listener: " + e.getMessage());
             } finally {
                 try {
+                    // Reset terminal back to normal mode when finished
                     String[] resetCmd = {"/bin/sh", "-c", "stty sane </dev/tty"};
                     Runtime.getRuntime().exec(resetCmd).waitFor();
                 } catch (Exception e) {
@@ -66,6 +66,13 @@ public class ConsoleReader {
 
     public void stopKeyListener() {
         isReading = false;
+        try {
+            // Reset terminal back to normal mode
+            String[] resetCmd = {"/bin/sh", "-c", "stty sane </dev/tty"};
+            Runtime.getRuntime().exec(resetCmd).waitFor();
+        } catch (Exception e) {
+            System.err.println("Failed to reset terminal: " + e.getMessage());
+        }
     }
     
     public String readLine() {
@@ -73,7 +80,6 @@ public class ConsoleReader {
         
         StringBuilder buffer = new StringBuilder();
         int cursorPosition = 0;
-        String currentHistoryEntry = "";
         
         uiManager.printPrompt();
         
@@ -98,23 +104,25 @@ public class ConsoleReader {
                         }
                     }
                 } else if (key == ARROW_PREFIX1) { 
-                    int prefix2 = keyPressQueue.take();
-                    if (prefix2 == ARROW_PREFIX2) {
-                        int arrowCode = keyPressQueue.take();
+                    Integer prefix2 = keyPressQueue.poll();
+                    if (prefix2 != null && prefix2 == ARROW_PREFIX2) {
+                        Integer arrowCode = keyPressQueue.poll();
+                        if (arrowCode == null) continue;
                         
                         if (arrowCode == UP_ARROW) { 
-                            currentHistoryEntry = history.getPreviousCommand();
-                            buffer = new StringBuilder(currentHistoryEntry);
-                            cursorPosition = buffer.length();
-                             
-                            System.out.print(CLEAR_LINE + RETURN_TO_LINE_START);
-                            uiManager.printPrompt();
-                            System.out.print(buffer.toString());
+                            String previousCommand = history.getPreviousCommand();
+                            if (!previousCommand.isEmpty()) {
+                                buffer = new StringBuilder(previousCommand);
+                                cursorPosition = buffer.length();
+                                
+                                System.out.print(CLEAR_LINE + RETURN_TO_LINE_START);
+                                uiManager.printPrompt();
+                                System.out.print(buffer.toString());
+                            }
                         } else if (arrowCode == DOWN_ARROW) { 
-                            currentHistoryEntry = history.getNextCommand();
-                            buffer = new StringBuilder(currentHistoryEntry);
+                            String nextCommand = history.getNextCommand();
+                            buffer = new StringBuilder(nextCommand);
                             cursorPosition = buffer.length();
-                            
                             
                             System.out.print(CLEAR_LINE + RETURN_TO_LINE_START);
                             uiManager.printPrompt();
@@ -132,20 +140,14 @@ public class ConsoleReader {
                         }
                     }
                 } else {
-                     
                     char c = (char) key.intValue();
                     if (c >= 32 && c < 127) {  
                         if (cursorPosition == buffer.length()) {
                             buffer.append(c);
                             System.out.print(c);
                         } else {
-                             
                             buffer.insert(cursorPosition, c);
-                            
-                             
                             System.out.print(buffer.substring(cursorPosition));
-                            
-                             
                             System.out.print("\u001b[" + (buffer.length() - cursorPosition - 1) + "D");
                         }
                         cursorPosition++;
@@ -159,7 +161,13 @@ public class ConsoleReader {
         }
         
         String result = buffer.toString();
-        history.addCommand(result);
+        if (!result.isEmpty()) {
+            history.addCommand(result);
+        }
         return result;
+    }
+    
+    public CommandHistory getHistory() {
+        return history;
     }
 }

@@ -3,7 +3,6 @@ package com.curlbaby;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class CommandHistory {
     private final List<String> history;
     private int currentIndex;
@@ -15,13 +14,12 @@ public class CommandHistory {
     
     public void addCommand(String command) {
         if (!command.trim().isEmpty()) {
-             if (history.isEmpty() || !history.get(history.size() - 1).equals(command)) {
+            if (history.isEmpty() || !history.get(history.size() - 1).equals(command)) {
                 history.add(command);
             }
             currentIndex = history.size();
         }
     }
-    
     
     public String getPreviousCommand() {
         if (history.isEmpty() || currentIndex <= 0) {
@@ -32,18 +30,18 @@ public class CommandHistory {
         return history.get(currentIndex);
     }
     
-    
     public String getNextCommand() {
-        if (history.isEmpty() || currentIndex >= history.size() - 1) {
-            currentIndex = history.size(); 
-            return "";  
+        if (history.isEmpty() || currentIndex >= history.size()) {
+            return "";
         }
         
         currentIndex++;
+        if (currentIndex == history.size()) {
+            return "";
+        }
         return history.get(currentIndex);
     }
     
-     
     public int size() {
         return history.size();
     }

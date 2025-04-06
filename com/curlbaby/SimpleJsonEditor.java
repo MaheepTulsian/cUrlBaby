@@ -40,7 +40,6 @@ public class SimpleJsonEditor {
             uiManager.printInputPrompt("JSON>");
             String input = scanner.nextLine();
             
-            // Check if input is just a number (direct line editing)
             if (input.matches("^\\d+$")) {
                 int lineNumber = Integer.parseInt(input);
                 if (lineNumber > 0 && lineNumber <= lines.size()) {
@@ -95,7 +94,6 @@ public class SimpleJsonEditor {
         
         String result = String.join("\n", lines).trim();
         
-        // Try to format the JSON if it's valid
         if (!result.isEmpty()) {
             try {
                 if (result.startsWith("{") || result.startsWith("[")) {
@@ -212,7 +210,6 @@ public class SimpleJsonEditor {
         try {
             if (content.startsWith("{") || content.startsWith("[")) {
                 String formatted = jsonFormatter.formatJson(content);
-                // Split the formatted content into lines and update the editor
                 lines.clear();
                 for (String line : formatted.split("\n")) {
                     lines.add(line);

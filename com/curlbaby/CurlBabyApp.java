@@ -1,16 +1,16 @@
 package com.curlbaby;
 
+import java.util.Scanner;
+
 public class CurlBabyApp {
     private static final UIManager uiManager = new UIManager();
     private static final HttpRequestHandler requestHandler = new HttpRequestHandler(uiManager);
     private static final CommandProcessor commandProcessor = new CommandProcessor(uiManager, requestHandler);
-    private static final CommandHistory commandHistory = new CommandHistory();
     private static final ConsoleReader consoleReader = new ConsoleReader(uiManager);
     
     public static void main(String[] args) {
         uiManager.printWelcomeScreen();
         
-        // Check if we're running in an environment that supports arrow keys
         boolean supportsArrowKeys = isUnixTerminal();
         
         if (supportsArrowKeys) {
@@ -21,21 +21,15 @@ public class CurlBabyApp {
             uiManager.printInfo("Basic input mode will be used instead");
         }
         
-        // Main application loop
         while (true) {
             String input;
             
             if (supportsArrowKeys) {
-                // Use enhanced console reader with arrow key support
                 input = consoleReader.readLine().trim();
             } else {
-                // Fallback to simple prompt and Scanner for non-Unix terminals
                 uiManager.printPrompt();
-                input = new java.util.Scanner(System.in).nextLine().trim();
-                // Still save commands to history even without navigation
-                if (!input.isEmpty()) {
-                    commandHistory.addCommand(input);
-                }
+                Scanner scanner = new Scanner(System.in);
+                input = scanner.nextLine().trim();
             }
             
             if (input.isEmpty()) {
@@ -50,9 +44,6 @@ public class CurlBabyApp {
         }
     }
     
-    /**
-     * Check if we're running in a Unix-like terminal that would support arrow keys
-     */
     private static boolean isUnixTerminal() {
         String osName = System.getProperty("os.name").toLowerCase();
         return osName.contains("nix") || osName.contains("nux") || osName.contains("mac");
