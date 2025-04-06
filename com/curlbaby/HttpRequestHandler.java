@@ -11,15 +11,31 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class HttpRequestHandler {
-    private final UIManager uiManager = new UIManager();
-    private final JsonFormatter jsonFormatter = new JsonFormatter();
-    private final Scanner scanner = new Scanner(System.in);
-    private final SimpleJsonEditor jsonEditor;
-     
-    private Request currentRequest;
+    private final UIManager uiManager;
+    private final JsonFormatter jsonFormatter;
+    private final ConsoleReader consoleReader;
+    private final Scanner fallbackScanner; // Fallback for environments without arrow key support
     
-    public HttpRequestHandler() {
-        this.jsonEditor = new SimpleJsonEditor(uiManager, scanner, jsonFormatter);
+    private Request currentRequest;
+    private boolean useConsoleReader;
+    
+    public HttpRequestHandler(UIManager uiManager) {
+        this.uiManager = uiManager;
+        this.jsonFormatter = new JsonFormatter();
+        this.consoleReader = new ConsoleReader(uiManager);
+        this.fallbackScanner = new Scanner(System.in);
+        this.useConsoleReader = isUnixTerminal();
+    }
+    
+    /**
+     * Read a line of input using the appropriate reader
+     */
+    private String readLine() {
+        if (useConsoleReader) {
+            return consoleReader.readLine();
+        } else {
+            return fallbackScanner.nextLine();
+        }
     }
     
     public void executeGetRequest(String urlString) {
@@ -32,55 +48,32 @@ public class HttpRequestHandler {
         Request request = new Request("POST", urlString);
          
         uiManager.printInputPrompt("Content-Type (default: application/json):");
-        String contentType = scanner.nextLine().trim();
+        String contentType = readLine().trim();
         if (contentType.isEmpty()) {
             contentType = "application/json";
         }
         request.addHeader("Content-Type", contentType);
          
-        uiManager.printInputPrompt("Request body (enter 'json' for JSON editor, 'raw' for simple input):");
-        String bodyInput = scanner.nextLine().trim();
+        uiManager.printInputPrompt("Request body (enter 'json' for JSON editor, or type directly):");
+        String bodyInput = readLine().trim();
         
         if (bodyInput.equalsIgnoreCase("json")) {
-            uiManager.printInfo("Opening JSON editor... Type one line at a time, use commands with :");
-            String jsonBody = jsonEditor.edit();
-            if (!jsonBody.isEmpty()) {
-                request.setBody(jsonBody);
-            }
-        } else if (bodyInput.equalsIgnoreCase("raw")) {
-            uiManager.printInfo("Enter raw body content (type '.' on a new line to finish):");
-            StringBuilder rawBody = new StringBuilder();
-            String line;
-            while (!(line = scanner.nextLine()).equals(".")) {
-                rawBody.append(line).append("\n");
-            }
-            request.setBody(rawBody.toString().trim());
+            String jsonBody = promptForJsonBody();
+            request.setBody(jsonBody);
         } else if (!bodyInput.isEmpty()) {
-            // Direct input for small JSON or non-JSON
             request.setBody(bodyInput);
-            
-            // Try to format if it looks like JSON
-            if (contentType.contains("json") && 
-                (bodyInput.trim().startsWith("{") || bodyInput.trim().startsWith("["))) {
-                try {
-                    String formattedJson = jsonFormatter.formatJson(bodyInput);
-                    request.setBody(formattedJson);
-                } catch (Exception e) {
-                    // It's fine if it's not valid JSON, just use as-is
-                }
-            }
         }
         
         // Ask for additional headers
         boolean addingHeaders = true;
         while (addingHeaders) {
             uiManager.printInputPrompt("Add header? (y/n):");
-            String addHeader = scanner.nextLine().trim().toLowerCase();
+            String addHeader = readLine().trim().toLowerCase();
             if (addHeader.equals("y")) {
                 uiManager.printInputPrompt("Header name:");
-                String headerName = scanner.nextLine().trim();
+                String headerName = readLine().trim();
                 uiManager.printInputPrompt("Header value:");
-                String headerValue = scanner.nextLine().trim();
+                String headerValue = readLine().trim();
                 request.addHeader(headerName, headerValue);
             } else {
                 addingHeaders = false;
@@ -97,55 +90,32 @@ public class HttpRequestHandler {
         uiManager.printInfo("PUT request follows the same flow as POST");
         
         uiManager.printInputPrompt("Content-Type (default: application/json):");
-        String contentType = scanner.nextLine().trim();
+        String contentType = readLine().trim();
         if (contentType.isEmpty()) {
             contentType = "application/json";
         }
         request.addHeader("Content-Type", contentType);
         
         
-        uiManager.printInputPrompt("Request body (enter 'json' for JSON editor, 'raw' for simple input):");
-        String bodyInput = scanner.nextLine().trim();
+        uiManager.printInputPrompt("Request body (enter 'json' for JSON editor, or type directly):");
+        String bodyInput = readLine().trim();
         
         if (bodyInput.equalsIgnoreCase("json")) {
-            uiManager.printInfo("Opening JSON editor... Type one line at a time, use commands with :");
-            String jsonBody = jsonEditor.edit();
-            if (!jsonBody.isEmpty()) {
-                request.setBody(jsonBody);
-            }
-        } else if (bodyInput.equalsIgnoreCase("raw")) {
-            uiManager.printInfo("Enter raw body content (type '.' on a new line to finish):");
-            StringBuilder rawBody = new StringBuilder();
-            String line;
-            while (!(line = scanner.nextLine()).equals(".")) {
-                rawBody.append(line).append("\n");
-            }
-            request.setBody(rawBody.toString().trim());
+            String jsonBody = promptForJsonBody();
+            request.setBody(jsonBody);
         } else if (!bodyInput.isEmpty()) {
-            // Direct input for small JSON or non-JSON
             request.setBody(bodyInput);
-            
-            // Try to format if it looks like JSON
-            if (contentType.contains("json") && 
-                (bodyInput.trim().startsWith("{") || bodyInput.trim().startsWith("["))) {
-                try {
-                    String formattedJson = jsonFormatter.formatJson(bodyInput);
-                    request.setBody(formattedJson);
-                } catch (Exception e) {
-                    // It's fine if it's not valid JSON, just use as-is
-                }
-            }
         }
         
         boolean addingHeaders = true;
         while (addingHeaders) {
             uiManager.printInputPrompt("Add header? (y/n):");
-            String addHeader = scanner.nextLine().trim().toLowerCase();
+            String addHeader = readLine().trim().toLowerCase();
             if (addHeader.equals("y")) {
                 uiManager.printInputPrompt("Header name:");
-                String headerName = scanner.nextLine().trim();
+                String headerName = readLine().trim();
                 uiManager.printInputPrompt("Header value:");
-                String headerValue = scanner.nextLine().trim();
+                String headerValue = readLine().trim();
                 request.addHeader(headerName, headerValue);
             } else {
                 addingHeaders = false;
@@ -160,6 +130,25 @@ public class HttpRequestHandler {
         Request request = new Request("DELETE", urlString);
         currentRequest = request;
         executeRequest(request);
+    }
+    
+    private String promptForJsonBody() {
+        uiManager.printInfo("Enter JSON body (type '.' on a new line to finish):");
+        StringBuilder json = new StringBuilder();
+        String line;
+        while (!(line = readLine()).equals(".")) {
+            json.append(line).append("\n");
+        }
+        
+        try {
+            // Try to format it to validate
+            String formattedJson = jsonFormatter.formatJson(json.toString());
+            uiManager.printSuccess("JSON validated successfully");
+            return formattedJson;
+        } catch (Exception e) {
+            uiManager.printWarning("JSON might be invalid: " + e.getMessage());
+            return json.toString();
+        }
     }
     
     private void executeRequest(Request request) {
@@ -258,6 +247,14 @@ public class HttpRequestHandler {
                 connection.disconnect();
             }
         }
+    }
+    
+    /**
+     * Check if we're running in a Unix-like terminal
+     */
+    private boolean isUnixTerminal() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        return osName.contains("nix") || osName.contains("nux") || osName.contains("mac");
     }
      
     public static class Request {
