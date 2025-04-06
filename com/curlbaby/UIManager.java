@@ -12,6 +12,9 @@ public class UIManager {
     private static final String GREEN = "\033[0;32m";
     private static final String YELLOW = "\033[0;33m";
     
+    public String getReset() { return RESET; }
+    public String getBoldYellow() { return BOLD_YELLOW; }
+    
     public void printWelcomeScreen() {
         System.out.println(BOLD_CYAN);
         System.out.println("┌───────────────────────────────────────────────────┐");
@@ -42,6 +45,8 @@ public class UIManager {
         System.out.println("  " + BOLD_CYAN + "post <url>" + RESET + " - Execute a POST request with interactive body editor");
         System.out.println("  " + BOLD_CYAN + "put <url>" + RESET + " - Execute a PUT request with interactive body editor");
         System.out.println("  " + BOLD_CYAN + "delete <url>" + RESET + " - Execute a DELETE request to the specified URL");
+        System.out.println("  " + BOLD_CYAN + "history" + RESET + " - Show command history");
+        System.out.println("  " + BOLD_CYAN + "history clear" + RESET + " - Clear command history");
         System.out.println("  " + BOLD_CYAN + "help" + RESET + " - Show this help message");
         System.out.println("  " + BOLD_CYAN + "exit" + RESET + " - Exit the application");
     }

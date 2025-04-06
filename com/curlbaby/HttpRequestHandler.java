@@ -14,23 +14,11 @@ public class HttpRequestHandler {
     private final UIManager uiManager;
     private final JsonFormatter jsonFormatter;
     private final Scanner scanner;
-    private final ConsoleReader consoleReader;
-    private final boolean useConsoleReader;
     
     public HttpRequestHandler(UIManager uiManager) {
         this.uiManager = uiManager;
         this.jsonFormatter = new JsonFormatter();
         this.scanner = new Scanner(System.in);
-        this.consoleReader = new ConsoleReader(uiManager);
-        this.useConsoleReader = isUnixTerminal();
-    }
-    
-    private String readLine() {
-        if (useConsoleReader) {
-            return consoleReader.readLine();
-        } else {
-            return scanner.nextLine();
-        }
     }
     
     public void executeGetRequest(String urlString) {
@@ -42,14 +30,14 @@ public class HttpRequestHandler {
         Request request = new Request("POST", urlString);
          
         uiManager.printInputPrompt("Content-Type (default: application/json):");
-        String contentType = readLine().trim();
+        String contentType = scanner.nextLine().trim();
         if (contentType.isEmpty()) {
             contentType = "application/json";
         }
         request.addHeader("Content-Type", contentType);
          
         uiManager.printInputPrompt("Request body (enter 'json' for JSON editor, or type directly):");
-        String bodyInput = readLine().trim();
+        String bodyInput = scanner.nextLine().trim();
         
         if (bodyInput.equalsIgnoreCase("json")) {
             SimpleJsonEditor editor = new SimpleJsonEditor(uiManager, scanner, jsonFormatter);
@@ -62,12 +50,12 @@ public class HttpRequestHandler {
         boolean addingHeaders = true;
         while (addingHeaders) {
             uiManager.printInputPrompt("Add header? (y/n):");
-            String addHeader = readLine().trim().toLowerCase();
+            String addHeader = scanner.nextLine().trim().toLowerCase();
             if (addHeader.equals("y")) {
                 uiManager.printInputPrompt("Header name:");
-                String headerName = readLine().trim();
+                String headerName = scanner.nextLine().trim();
                 uiManager.printInputPrompt("Header value:");
-                String headerValue = readLine().trim();
+                String headerValue = scanner.nextLine().trim();
                 request.addHeader(headerName, headerValue);
             } else {
                 addingHeaders = false;
@@ -83,7 +71,7 @@ public class HttpRequestHandler {
         uiManager.printInfo("PUT request follows the same flow as POST");
         
         uiManager.printInputPrompt("Content-Type (default: application/json):");
-        String contentType = readLine().trim();
+        String contentType = scanner.nextLine().trim();
         if (contentType.isEmpty()) {
             contentType = "application/json";
         }
@@ -91,7 +79,7 @@ public class HttpRequestHandler {
         
         
         uiManager.printInputPrompt("Request body (enter 'json' for JSON editor, or type directly):");
-        String bodyInput = readLine().trim();
+        String bodyInput = scanner.nextLine().trim();
         
         if (bodyInput.equalsIgnoreCase("json")) {
             SimpleJsonEditor editor = new SimpleJsonEditor(uiManager, scanner, jsonFormatter);
@@ -104,12 +92,12 @@ public class HttpRequestHandler {
         boolean addingHeaders = true;
         while (addingHeaders) {
             uiManager.printInputPrompt("Add header? (y/n):");
-            String addHeader = readLine().trim().toLowerCase();
+            String addHeader = scanner.nextLine().trim().toLowerCase();
             if (addHeader.equals("y")) {
                 uiManager.printInputPrompt("Header name:");
-                String headerName = readLine().trim();
+                String headerName = scanner.nextLine().trim();
                 uiManager.printInputPrompt("Header value:");
-                String headerValue = readLine().trim();
+                String headerValue = scanner.nextLine().trim();
                 request.addHeader(headerName, headerValue);
             } else {
                 addingHeaders = false;
@@ -220,11 +208,6 @@ public class HttpRequestHandler {
                 connection.disconnect();
             }
         }
-    }
-    
-    private boolean isUnixTerminal() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        return osName.contains("nix") || osName.contains("nux") || osName.contains("mac");
     }
     
     public static class Request {
