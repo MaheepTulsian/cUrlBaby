@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.io.Console;
 
 public class CurlBabyApp {
     private static final UIManager uiManager = new UIManager();
@@ -27,9 +28,25 @@ public class CurlBabyApp {
             saveCommandHistory();
         }));
         
+        // Check if we have access to the system console (for arrow key handling)
+        Console console = System.console();
+        boolean supportsArrowKeys = (console != null);
+        
+        if (supportsArrowKeys) {
+            uiManager.printInfo("Tip: Use UP and DOWN arrow keys to navigate command history");
+        }
+        
         while (true) {
             uiManager.printPrompt();
-            String input = scanner.nextLine().trim();
+            String input;
+            
+            if (supportsArrowKeys) {
+                // Read input with potential arrow key handling
+                input = readLineWithArrows();
+            } else {
+                // Fallback to regular scanner
+                input = scanner.nextLine().trim();
+            }
             
             if (input.isEmpty()) {
                 continue;
@@ -58,6 +75,102 @@ public class CurlBabyApp {
             
             commandProcessor.processCommand(command, argument);
         }
+    }
+    
+    // Simple arrow key handling that doesn't mess with terminal modes
+    private static String readLineWithArrows() {
+        try {
+            // Start with an empty string
+            StringBuilder buffer = new StringBuilder();
+            
+            // Read character by character
+            while (true) {
+                int c = System.in.read();
+                
+                // Handle Enter key
+                if (c == '\n' || c == '\r') {
+                    System.out.println(); // Move to next line
+                    break;
+                }
+                
+                // Handle backspace
+                if (c == 127 || c == 8) {
+                    if (buffer.length() > 0) {
+                        buffer.deleteCharAt(buffer.length() - 1);
+                        // Move cursor back, clear character, move cursor back again
+                        System.out.print("\b \b");
+                    }
+                    continue;
+                }
+                
+                // Handle arrow keys (ESC [ A for up, ESC [ B for down)
+                if (c == 27) {
+                    // This might be an arrow key sequence
+                    if (System.in.available() > 0 && System.in.read() == 91) { // [
+                        if (System.in.available() > 0) {
+                            int arrowType = System.in.read();
+                            
+                            if (arrowType == 65) { // Up arrow
+                                // Get previous command if available
+                                if (historyIndex > 0) {
+                                    historyIndex--;
+                                    
+                                    // Clear current line
+                                    clearLine(buffer.length());
+                                    
+                                    // Set buffer to previous command
+                                    buffer = new StringBuilder(commandHistory.get(historyIndex));
+                                    System.out.print(buffer.toString());
+                                }
+                            } else if (arrowType == 66) { // Down arrow
+                                // Get next command if available
+                                if (historyIndex < commandHistory.size() - 1) {
+                                    historyIndex++;
+                                    
+                                    // Clear current line
+                                    clearLine(buffer.length());
+                                    
+                                    // Set buffer to next command
+                                    buffer = new StringBuilder(commandHistory.get(historyIndex));
+                                    System.out.print(buffer.toString());
+                                } else if (historyIndex == commandHistory.size() - 1) {
+                                    // At the end of history, clear the line
+                                    historyIndex++;
+                                    clearLine(buffer.length());
+                                    buffer = new StringBuilder();
+                                }
+                            }
+                        }
+                    }
+                    continue;
+                }
+                
+                // Regular character - add to buffer and echo
+                if (c >= 32 && c < 127) { // Printable ASCII
+                    buffer.append((char)c);
+                    System.out.print((char)c);
+                }
+            }
+            
+            return buffer.toString().trim();
+            
+        } catch (IOException e) {
+            // Fallback to scanner if any error occurs
+            scanner.nextLine(); // Clear the scanner buffer
+            return scanner.nextLine().trim();
+        }
+    }
+    
+    // Helper method to clear the current line
+    private static void clearLine(int length) {
+        // Move cursor to beginning, print spaces, and move back again
+        System.out.print("\r");
+        uiManager.printPrompt();
+        for (int i = 0; i < length; i++) {
+            System.out.print(" ");
+        }
+        System.out.print("\r");
+        uiManager.printPrompt();
     }
     
     private static void loadCommandHistory() {
