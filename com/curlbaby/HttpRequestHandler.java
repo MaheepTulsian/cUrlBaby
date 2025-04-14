@@ -112,7 +112,8 @@ public class HttpRequestHandler {
         executeRequest(request);
     }
     
-    private void executeRequest(Request request) {
+    // Make this method public so it can be called from ApiCollectionCommands
+    public void executeRequest(Request request) {
         HttpURLConnection connection = null;
         try {
             String urlString = request.getUrl();
