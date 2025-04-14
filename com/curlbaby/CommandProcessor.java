@@ -5,30 +5,20 @@ public class CommandProcessor {
     private final HttpRequestHandler requestHandler;
     private final ApiCollectionManager apiCollectionManager;
     private final ApiCollectionCommands apiCollectionCommands;
-    private final EnvironmentManager environmentManager;
-    private final EnvironmentCommands environmentCommands;
     
     public CommandProcessor(UIManager uiManager, HttpRequestHandler requestHandler) {
         this.uiManager = uiManager;
         this.requestHandler = requestHandler;
         this.apiCollectionManager = new ApiCollectionManager(uiManager);
         this.apiCollectionCommands = new ApiCollectionCommands(apiCollectionManager, uiManager, requestHandler);
-        this.environmentManager = new EnvironmentManager(uiManager);
-        this.environmentCommands = new EnvironmentCommands(environmentManager, uiManager);
     }
     
     public void processCommand(String command, String argument) {
-        // First try to substitute environment variables in the argument
-        if (environmentManager.getActiveEnvironment() != null) {
-            argument = environmentManager.substituteVariables(argument);
-        }
         
         switch (command) {
             case "exit":
                 uiManager.printExitMessage();
-                // Close database connections before exit
                 apiCollectionManager.close();
-                environmentManager.close();
                 System.exit(0);
                 break;
             case "help":
@@ -62,15 +52,10 @@ public class CommandProcessor {
                     requestHandler.executeDeleteRequest(argument);
                 }
                 break;
-            // API collection commands
             case "group":
             case "api":
             case "run":
                 apiCollectionCommands.handleCommand(command, argument);
-                break;
-            // Environment commands
-            case "env":
-                environmentCommands.handleCommand(argument);
                 break;
             default:
                 uiManager.printError("Unknown command: " + command);
@@ -105,24 +90,8 @@ public class CommandProcessor {
         
         uiManager.printInfo("\n  run <id> - Execute a saved API request");
         
-        uiManager.printInfo("\nEnvironment Commands:");
-        uiManager.printInfo("  env - Show active environment");
-        uiManager.printInfo("  env create <name> - Create a new environment");
-        uiManager.printInfo("  env list - List all environments");
-        uiManager.printInfo("  env use <name> - Set active environment");
-        uiManager.printInfo("  env show <id|name> - Show environment and its variables");
-        uiManager.printInfo("  env delete <id> - Delete an environment");
-        uiManager.printInfo("  env set <var> <value> - Set variable in active environment");
-        uiManager.printInfo("  env set <env> <var> <value> - Set variable in specified environment");
-        uiManager.printInfo("  env unset <var> - Unset variable in active environment");
-        uiManager.printInfo("  env unset <env> <var> - Unset variable in specified environment");
-        
         uiManager.printInfo("\nHistory Commands:");
         uiManager.printInfo("  history - Display command history");
         uiManager.printInfo("  history clear - Clear command history");
-        
-        uiManager.printInfo("\nEnvironment Variables:");
-        uiManager.printInfo("  Use {{variable_name}} in requests to substitute environment variables");
-        uiManager.printInfo("  Example: get api.example.com/users/{{user_id}}");
     }
 }

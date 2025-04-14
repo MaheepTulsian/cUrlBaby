@@ -11,15 +11,15 @@ public class ConsoleReader {
     private static final String CLEAR_LINE = "\u001b[2K";
     private static final String RETURN_TO_LINE_START = "\r";
      
-    private static final int ARROW_PREFIX1 = 27;   // ESC
-    private static final int ARROW_PREFIX2 = 91;   // [
-    private static final int UP_ARROW = 65;      // A
-    private static final int DOWN_ARROW = 66;    // B
-    private static final int RIGHT_ARROW = 67;    // C
-    private static final int LEFT_ARROW = 68;    // D
-    private static final int BACKSPACE = 127;    // DEL
-    private static final int ENTER = 10;         // LF (Line Feed)
-    private static final int CTRL_C = 3;         // End of Text
+    private static final int ARROW_PREFIX1 = 27;  
+    private static final int ARROW_PREFIX2 = 91;  
+    private static final int UP_ARROW = 65;      
+    private static final int DOWN_ARROW = 66;    
+    private static final int RIGHT_ARROW = 67;   
+    private static final int LEFT_ARROW = 68;    
+    private static final int BACKSPACE = 127;   
+    private static final int ENTER = 10;        
+    private static final int CTRL_C = 3;        
      
     private final BlockingQueue<Integer> keyPressQueue = new LinkedBlockingQueue<>();
     private volatile boolean isReading = false;
@@ -32,17 +32,17 @@ public class ConsoleReader {
     public void startKeyListener() {
         Thread keyListenerThread = new Thread(() -> {
             try {
-                // Set terminal to raw mode at the start
+                
                 String[] rawCmd = {"/bin/sh", "-c", "stty raw -echo </dev/tty"};
                 Runtime.getRuntime().exec(rawCmd).waitFor();
                 
                 while (isReading) {
                     try {
                         int key = System.in.read();
-                        if (key != -1) {  // Only process valid key presses
+                        if (key != -1) {   
                             keyPressQueue.put(key);
                             
-                            // Handle Ctrl+C to exit gracefully
+                             
                             if (key == CTRL_C) {
                                 System.out.println();
                                 System.out.println("^C");
@@ -58,7 +58,7 @@ public class ConsoleReader {
                 System.err.println("Error in key listener: " + e.getMessage());
             } finally {
                 try {
-                    // Reset terminal back to normal mode when finished
+                     
                     String[] resetCmd = {"/bin/sh", "-c", "stty sane </dev/tty"};
                     Runtime.getRuntime().exec(resetCmd).waitFor();
                 } catch (Exception e) {
@@ -75,7 +75,7 @@ public class ConsoleReader {
     public void stopKeyListener() {
         isReading = false;
         try {
-            // Reset terminal back to normal mode
+             
             String[] resetCmd = {"/bin/sh", "-c", "stty sane </dev/tty"};
             Runtime.getRuntime().exec(resetCmd).waitFor();
         } catch (Exception e) {
@@ -112,63 +112,57 @@ public class ConsoleReader {
                         }
                     }
                 } else if (key == ARROW_PREFIX1) { 
-                    // Wait for the second part of the escape sequence
+                     
                     Integer prefix2 = keyPressQueue.take();
                     if (prefix2 == ARROW_PREFIX2) {
-                        // Get the actual arrow key code
+                        
                         Integer arrowCode = keyPressQueue.take();
                         
                         if (arrowCode == UP_ARROW) { 
                             String previousCommand = history.getPreviousCommand();
                             if (!previousCommand.isEmpty()) {
-                                // Clear current line
+                                
                                 System.out.print(CLEAR_LINE + RETURN_TO_LINE_START);
                                 uiManager.printPrompt();
-                                
-                                // Replace with previous command
+                                 
                                 buffer = new StringBuilder(previousCommand);
                                 System.out.print(buffer.toString());
                                 cursorPosition = buffer.length();
                             }
                         } else if (arrowCode == DOWN_ARROW) { 
                             String nextCommand = history.getNextCommand();
-                            
-                            // Clear current line
+                             
                             System.out.print(CLEAR_LINE + RETURN_TO_LINE_START);
                             uiManager.printPrompt();
-                            
-                            // Replace with next command or empty string
+                             
                             buffer = new StringBuilder(nextCommand);
                             System.out.print(buffer.toString());
                             cursorPosition = buffer.length();
                         } else if (arrowCode == LEFT_ARROW) { 
                             if (cursorPosition > 0) {
                                 cursorPosition--;
-                                System.out.print("\u001b[1D");  // Move cursor left by 1
+                                System.out.print("\u001b[1D");  
                             }
                         } else if (arrowCode == RIGHT_ARROW) { 
                             if (cursorPosition < buffer.length()) {
                                 cursorPosition++;
-                                System.out.print("\u001b[1C");  // Move cursor right by 1
+                                System.out.print("\u001b[1C");  
                             }
                         }
                     }
                 } else {
-                    char c = (char) key.intValue();
-                    // Only accept printable ASCII characters
+                    char c = (char) key.intValue(); 
                     if (c >= 32 && c < 127) {  
                         if (cursorPosition == buffer.length()) {
                             // Append at the end
                             buffer.append(c);
                             System.out.print(c);
-                        } else {
-                            // Insert in the middle
+                        } else { 
                             buffer.insert(cursorPosition, c);
                             
-                            // Redraw from cursor position to end
                             System.out.print(buffer.substring(cursorPosition));
                             
-                            // Move cursor back to just after inserted character
+                            
                             int charsToMoveBack = buffer.length() - cursorPosition - 1;
                             if (charsToMoveBack > 0) {
                                 System.out.print("\u001b[" + charsToMoveBack + "D");

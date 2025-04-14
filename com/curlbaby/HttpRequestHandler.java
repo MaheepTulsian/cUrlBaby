@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -14,11 +15,14 @@ public class HttpRequestHandler {
     private final UIManager uiManager;
     private final JsonFormatter jsonFormatter;
     private final Scanner scanner;
+    private final ApiCollectionManager apiCollectionManager;
+    private Request lastExecutedRequest; // Store the last executed request
     
     public HttpRequestHandler(UIManager uiManager) {
         this.uiManager = uiManager;
         this.jsonFormatter = new JsonFormatter();
         this.scanner = new Scanner(System.in);
+        this.apiCollectionManager = new ApiCollectionManager(uiManager);
     }
     
     public void executeGetRequest(String urlString) {
@@ -202,12 +206,136 @@ public class HttpRequestHandler {
                 System.out.println(response);
             }
             
+            // Store the last executed request
+            lastExecutedRequest = request;
+            
+            // After successful execution, offer to save the request
+            offerToSaveRequest();
+            
         } catch (IOException e) {
             uiManager.printError("Error: " + e.getMessage());
         } finally {
             if (connection != null) {
                 connection.disconnect();
             }
+        }
+    }
+    
+    private void offerToSaveRequest() {
+        if (lastExecutedRequest == null) {
+            return;
+        }
+        
+        uiManager.printInputPrompt("Would you like to save this request? (y/n):");
+        String saveResponse = scanner.nextLine().trim().toLowerCase();
+        
+        if (saveResponse.equals("y") || saveResponse.equals("yes")) {
+            // Get the request name
+            uiManager.printInputPrompt("Enter a name for this request:");
+            String requestName = scanner.nextLine().trim();
+            if (requestName.isEmpty()) {
+                uiManager.printError("Request name cannot be empty");
+                return;
+            }
+            
+            // Fetch all groups and display them
+            List<Map<String, Object>> groups = apiCollectionManager.getAllGroups();
+            if (groups.isEmpty()) {
+                uiManager.printInfo("No existing API groups. Creating a new one.");
+                createGroupAndSaveRequest(requestName);
+                return;
+            }
+            
+            // Display groups
+            uiManager.printInfo("Select a group or create a new one:");
+            int counter = 1;
+            for (Map<String, Object> group : groups) {
+                System.out.printf("  %d. %s\n", counter++, group.get("name"));
+            }
+            System.out.printf("  %d. Create new group\n", counter);
+            
+            // Get user selection
+            uiManager.printInputPrompt("Enter your choice (1-" + counter + "):");
+            int choice;
+            try {
+                choice = Integer.parseInt(scanner.nextLine().trim());
+                if (choice < 1 || choice > counter) {
+                    uiManager.printError("Invalid choice");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                uiManager.printError("Invalid input. Please enter a number.");
+                return;
+            }
+            
+            if (choice == counter) {
+                // Create new group
+                createGroupAndSaveRequest(requestName);
+            } else {
+                // Save to existing group
+                Map<String, Object> selectedGroup = groups.get(choice - 1);
+                int groupId = (int) selectedGroup.get("id");
+                saveRequestToGroup(groupId, requestName);
+            }
+        }
+    }
+    
+    private void createGroupAndSaveRequest(String requestName) {
+        uiManager.printInputPrompt("Enter new group name:");
+        String groupName = scanner.nextLine().trim();
+        if (groupName.isEmpty()) {
+            uiManager.printError("Group name cannot be empty");
+            return;
+        }
+        
+        uiManager.printInputPrompt("Enter group description (optional):");
+        String description = scanner.nextLine().trim();
+        
+        if (apiCollectionManager.createGroup(groupName, description)) {
+            Integer groupId = apiCollectionManager.getGroupIdByName(groupName);
+            if (groupId == null) {
+                uiManager.printError("Error retrieving newly created group");
+                return;
+            }
+            saveRequestToGroup(groupId, requestName);
+        } else {
+            uiManager.printError("Failed to create group");
+        }
+    }
+    
+    private void saveRequestToGroup(int groupId, String requestName) {
+        if (lastExecutedRequest == null) {
+            uiManager.printError("No request to save");
+            return;
+        }
+        
+        // Convert headers to JSON
+        StringBuilder headersJson = new StringBuilder("{");
+        boolean first = true;
+        for (Map.Entry<String, String> entry : lastExecutedRequest.getHeaders().entrySet()) {
+            if (!first) {
+                headersJson.append(", ");
+            }
+            headersJson.append("\"").append(entry.getKey()).append("\": \"")
+                      .append(entry.getValue()).append("\"");
+            first = false;
+        }
+        headersJson.append("}");
+        
+        uiManager.printInputPrompt("Description (optional):");
+        String description = scanner.nextLine().trim();
+        
+        if (apiCollectionManager.saveRequest(
+                groupId, 
+                requestName, 
+                lastExecutedRequest.getMethod(), 
+                lastExecutedRequest.getUrl(), 
+                headersJson.toString(), 
+                lastExecutedRequest.getBody(), 
+                description)) {
+            uiManager.printSuccess("API request saved: " + requestName);
+        } else {
+            uiManager.printError("Failed to save request");
         }
     }
     

@@ -120,8 +120,7 @@ public class ApiCollectionCommands {
         uiManager.printInfo("  api delete <id> - Delete an API request");
         uiManager.printInfo("  run <id> - Execute a saved API request");
     }
-    
-    // Group management methods
+     
     
     private void createGroup(String argument) {
         if (argument.isEmpty()) {
@@ -174,8 +173,7 @@ public class ApiCollectionCommands {
         try {
             int groupId = Integer.parseInt(argument);
             group = collectionManager.getGroupById(groupId);
-        } catch (NumberFormatException e) {
-            // Treat as a name instead
+        } catch (NumberFormatException e) { 
             Integer groupId = collectionManager.getGroupIdByName(argument);
             if (groupId == null) {
                 uiManager.printError("Group not found: " + argument);
@@ -243,8 +241,7 @@ public class ApiCollectionCommands {
         
         try {
             int groupId = Integer.parseInt(argument);
-            
-            // Confirm deletion
+     
             uiManager.printWarning("This will delete the group and all its API requests.");
             uiManager.printInputPrompt("Are you sure? (y/n):");
             String confirm = scanner.nextLine().trim().toLowerCase();
@@ -262,8 +259,7 @@ public class ApiCollectionCommands {
             uiManager.printError("Invalid group ID: " + argument);
         }
     }
-    
-    // API request management methods
+     
     
     private void saveApi(String argument) {
         Pattern pattern = Pattern.compile("([^\\s]+)\\s+(.+)");
@@ -276,18 +272,17 @@ public class ApiCollectionCommands {
         
         String groupIdentifier = matcher.group(1);
         String requestName = matcher.group(2);
-        
-        // Get group ID
+         
         int groupId;
         try {
             groupId = Integer.parseInt(groupIdentifier);
-            // Verify group exists
+           
             if (collectionManager.getGroupById(groupId) == null) {
                 uiManager.printError("Group not found with ID: " + groupId);
                 return;
             }
         } catch (NumberFormatException e) {
-            // Treat as a name
+             
             Integer id = collectionManager.getGroupIdByName(groupIdentifier);
             if (id == null) {
                 uiManager.printError("Group not found: " + groupIdentifier);
@@ -296,7 +291,7 @@ public class ApiCollectionCommands {
             groupId = id;
         }
         
-        // Get request details
+        
         uiManager.printInputPrompt("HTTP Method (GET, POST, PUT, DELETE):");
         String method = scanner.nextLine().trim().toUpperCase();
         if (!method.matches("GET|POST|PUT|DELETE")) {
@@ -311,7 +306,7 @@ public class ApiCollectionCommands {
             return;
         }
         
-        // Headers
+         
         Map<String, String> headers = new HashMap<>();
         boolean addingHeaders = true;
         while (addingHeaders) {
@@ -328,7 +323,7 @@ public class ApiCollectionCommands {
             }
         }
         
-        // Convert headers to JSON
+         
         StringBuilder headersJson = new StringBuilder("{");
         boolean first = true;
         for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -341,7 +336,7 @@ public class ApiCollectionCommands {
         }
         headersJson.append("}");
         
-        // Request body for POST/PUT
+        
         String body = "";
         if (method.equals("POST") || method.equals("PUT")) {
             uiManager.printInputPrompt("Request body (enter 'json' for JSON editor, or type directly):");
@@ -358,7 +353,7 @@ public class ApiCollectionCommands {
         uiManager.printInputPrompt("Description (optional):");
         String description = scanner.nextLine().trim();
         
-        // Save to database
+        
         if (collectionManager.saveRequest(groupId, requestName, method, url, 
                                      headersJson.toString(), body, description)) {
             uiManager.printSuccess("API request saved: " + requestName);
@@ -375,7 +370,7 @@ public class ApiCollectionCommands {
         try {
             groupId = Integer.parseInt(argument);
         } catch (NumberFormatException e) {
-            // Treat as a name
+             
             Integer id = collectionManager.getGroupIdByName(argument);
             if (id == null) {
                 uiManager.printError("Group not found: " + argument);
@@ -476,7 +471,7 @@ public class ApiCollectionCommands {
         try {
             int requestId = Integer.parseInt(argument);
             
-            // Confirm deletion
+             
             uiManager.printWarning("Are you sure you want to delete this API request?");
             uiManager.printInputPrompt("Confirm (y/n):");
             String confirm = scanner.nextLine().trim().toLowerCase();
@@ -516,13 +511,13 @@ public class ApiCollectionCommands {
             String headersJson = (String) request.get("headers");
             String body = (String) request.get("body");
             
-            // Create request object
+             
             Request httpRequest = new Request(method, url);
             
-            // Parse headers from JSON
+             
             if (headersJson != null && !headersJson.equals("{}")) {
                 try {
-                    // Simple parsing without a JSON library
+                    
                     headersJson = headersJson.replaceAll("[{}\"]", "");
                     String[] headerPairs = headersJson.split(",");
                     for (String pair : headerPairs) {
@@ -538,12 +533,12 @@ public class ApiCollectionCommands {
                 }
             }
             
-            // Set body for POST/PUT requests
+    
             if ((method.equals("POST") || method.equals("PUT")) && body != null && !body.isEmpty()) {
                 httpRequest.setBody(body);
             }
             
-            // Execute the request based on method
+           
             uiManager.printInfo("Executing saved request: [" + method + "] " + request.get("name"));
             switch (method) {
                 case "GET":

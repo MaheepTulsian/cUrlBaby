@@ -34,7 +34,6 @@ public class ApiCollectionManager {
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
             
             try (Statement stmt = connection.createStatement()) {
-                // Create groups table
                 stmt.execute(
                     "CREATE TABLE IF NOT EXISTS api_groups (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -42,7 +41,7 @@ public class ApiCollectionManager {
                     "description TEXT)"
                 );
                 
-                // Create requests table
+ 
                 stmt.execute(
                     "CREATE TABLE IF NOT EXISTS api_requests (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -50,8 +49,8 @@ public class ApiCollectionManager {
                     "name TEXT NOT NULL, " +
                     "method TEXT NOT NULL, " +
                     "url TEXT NOT NULL, " +
-                    "headers TEXT, " +  // JSON string of headers
-                    "body TEXT, " +     // Request body
+                    "headers TEXT, " +   
+                    "body TEXT, " +     
                     "description TEXT, " +
                     "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                     "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
@@ -68,7 +67,7 @@ public class ApiCollectionManager {
         }
     }
     
-    // Group management methods
+     
     
     public boolean createGroup(String name, String description) {
         try (PreparedStatement pstmt = connection.prepareStatement(
