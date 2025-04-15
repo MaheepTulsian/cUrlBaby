@@ -11,6 +11,7 @@ public class UIManager {
     private static final String CYAN = "\033[0;36m";
     private static final String GREEN = "\033[0;32m";
     private static final String YELLOW = "\033[0;33m";
+    private static final String PINK = "\033[1;35m"; // Using bold magenta as a more compatible pink
     
     public String getReset() { return RESET; }
     public String getBoldYellow() { return BOLD_YELLOW; }
@@ -19,20 +20,34 @@ public class UIManager {
         System.out.println(BOLD_CYAN);
         System.out.println("┌───────────────────────────────────────────────────┐");
         System.out.println("│                                                   │");
-        System.out.println("│                 🌐  cUrlBaby  🌐                  │");
+        System.out.println("│                 🍼  cUrlBaby  🍼                  │");
         System.out.println("│                                                   │");
-        System.out.println("│          API Testing from the Command Line        │");
+        System.out.println("│         API Testing from the Command Line         │");
         System.out.println("│                                                   │");
-        System.out.println("│                A Powerful API Tools               │");
+        System.out.println("│             ~ Make API Calls Simple ~             │");
         System.out.println("│                                                   │");
         System.out.println("└───────────────────────────────────────────────────┘");
         System.out.println(RESET);
         
+        // Baby-themed art that's more compatible
+        System.out.println(PINK + "                .---.                " + RESET);
+        System.out.println(PINK + "               /     \\               " + RESET);
+        System.out.println(PINK + "               \\.@-@./               " + RESET);
+        System.out.println(PINK + "               /`\\_/`\\               " + RESET);
+        System.out.println(PINK + "              //  _  \\\\              " + RESET);
+        System.out.println(PINK + "             | \\     )|_             " + RESET);
+        System.out.println(PINK + "            /`\\_`>  <_/ \\            " + RESET);
+        System.out.println(BOLD_YELLOW + "           The API Crawler Baby" + RESET);
+        System.out.println();
+        
+        // Command hints
         System.out.println(BOLD_GREEN + "Type 'help' for available commands or 'exit' to quit" + RESET);
+        System.out.println(BOLD_CYAN + "Quick Start: Try " + BOLD_YELLOW + "get jsonplaceholder.typicode.com/todos/1" + RESET);
+        System.out.println();
     }
     
     public void printPrompt() {
-        System.out.print("\n" + BOLD_CYAN + "> " + RESET);
+        System.out.print(BOLD_CYAN + "> " + RESET);
     }
     
     public void printInputPrompt(String message) {
@@ -53,6 +68,7 @@ public class UIManager {
     
     public void printExitMessage() {
         System.out.println("\n" + BOLD_GREEN + "✓ Thank you for using cUrlBaby. Goodbye!" + RESET);
+        System.out.println(PINK + "  See you next time!" + RESET);
     }
     
     public void printError(String message) {

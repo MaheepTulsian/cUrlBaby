@@ -32,6 +32,7 @@ public class ApiCollectionManager {
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+            System.out.println("Connected to SQLite database: " + dbPath);
             
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute(
@@ -41,7 +42,6 @@ public class ApiCollectionManager {
                     "description TEXT)"
                 );
                 
- 
                 stmt.execute(
                     "CREATE TABLE IF NOT EXISTS api_requests (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +

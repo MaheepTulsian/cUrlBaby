@@ -27,8 +27,7 @@ public class CurlBabyApp {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             saveCommandHistory();
         }));
-        
-        // Check if we have access to the system console (for arrow key handling)
+         
         Console console = System.console();
         boolean supportsArrowKeys = (console != null);
         
@@ -76,54 +75,43 @@ public class CurlBabyApp {
             commandProcessor.processCommand(command, argument);
         }
     }
-    
-    // Simple arrow key handling that doesn't mess with terminal modes
+     
     private static String readLineWithArrows() {
-        try {
-            // Start with an empty string
+        try { 
             StringBuilder buffer = new StringBuilder();
-            
-            // Read character by character
+             
             while (true) {
                 int c = System.in.read();
                 
-                // Handle Enter key
+                 
                 if (c == '\n' || c == '\r') {
-                    System.out.println(); // Move to next line
+                    System.out.println();  
                     break;
                 }
-                
-                // Handle backspace
+                 
                 if (c == 127 || c == 8) {
                     if (buffer.length() > 0) {
                         buffer.deleteCharAt(buffer.length() - 1);
-                        // Move cursor back, clear character, move cursor back again
+                        
                         System.out.print("\b \b");
                     }
                     continue;
-                }
-                
-                // Handle arrow keys (ESC [ A for up, ESC [ B for down)
-                if (c == 27) {
-                    // This might be an arrow key sequence
+                } 
+                if (c == 27) { 
                     if (System.in.available() > 0 && System.in.read() == 91) { // [
                         if (System.in.available() > 0) {
                             int arrowType = System.in.read();
                             
-                            if (arrowType == 65) { // Up arrow
-                                // Get previous command if available
+                            if (arrowType == 65) { 
                                 if (historyIndex > 0) {
                                     historyIndex--;
-                                    
-                                    // Clear current line
+                                     
                                     clearLine(buffer.length());
-                                    
-                                    // Set buffer to previous command
+                                     
                                     buffer = new StringBuilder(commandHistory.get(historyIndex));
                                     System.out.print(buffer.toString());
                                 }
-                            } else if (arrowType == 66) { // Down arrow
-                                // Get next command if available
+                            } else if (arrowType == 66) {  
                                 if (historyIndex < commandHistory.size() - 1) {
                                     historyIndex++;
                                     

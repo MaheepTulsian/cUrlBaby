@@ -115,8 +115,7 @@ public class HttpRequestHandler {
         Request request = new Request("DELETE", urlString);
         executeRequest(request);
     }
-    
-    // Make this method public so it can be called from ApiCollectionCommands
+     
     public void executeRequest(Request request) {
         HttpURLConnection connection = null;
         try {
