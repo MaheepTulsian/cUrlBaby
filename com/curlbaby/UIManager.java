@@ -1,4 +1,6 @@
 package com.curlbaby;
+import java.io.File;
+import com.github.lalyos.jfiglet.FigletFont;
 
 public class UIManager {
     private static final String RESET = "\033[0m";
@@ -15,35 +17,31 @@ public class UIManager {
     
     public String getReset() { return RESET; }
     public String getBoldYellow() { return BOLD_YELLOW; }
+
+        
     
     public void printWelcomeScreen() {
-        System.out.println(BOLD_CYAN);
-        System.out.println("┌───────────────────────────────────────────────────┐");
-        System.out.println("│                                                   │");
-        System.out.println("│                 🍼  cUrlBaby  🍼                  │");
-        System.out.println("│                                                   │");
-        System.out.println("│         API Testing from the Command Line         │");
-        System.out.println("│                                                   │");
-        System.out.println("│             ~ Make API Calls Simple ~             │");
-        System.out.println("│                                                   │");
-        System.out.println("└───────────────────────────────────────────────────┘");
-        System.out.println(RESET);
-        
-        // Baby-themed art that's more compatible
-        System.out.println(PINK + "                .---.                " + RESET);
-        System.out.println(PINK + "               /     \\               " + RESET);
-        System.out.println(PINK + "               \\.@-@./               " + RESET);
-        System.out.println(PINK + "               /`\\_/`\\               " + RESET);
-        System.out.println(PINK + "              //  _  \\\\              " + RESET);
-        System.out.println(PINK + "             | \\     )|_             " + RESET);
-        System.out.println(PINK + "            /`\\_`>  <_/ \\            " + RESET);
-        System.out.println(BOLD_YELLOW + "           The API Crawler Baby" + RESET);
-        System.out.println();
-        
-        // Command hints
-        System.out.println(BOLD_GREEN + "Type 'help' for available commands or 'exit' to quit" + RESET);
-        System.out.println(BOLD_CYAN + "Quick Start: Try " + BOLD_YELLOW + "get jsonplaceholder.typicode.com/todos/1" + RESET);
-        System.out.println();
+        try {
+            String banner = FigletFont.convertOneLine(new File("./curlbaby/fonts/slant.flf"), "curlbaby");
+            String logo = FigletFont.convertOneLine("{0_0}");
+            System.out.println(logo);
+            // System.out.println(PINK + "     ___" + RESET);
+            // System.out.println(PINK + "   ((((\\\\\\" + RESET);
+            // System.out.println(PINK + "    9_9 3))" + RESET);
+            // System.out.println(PINK + "    \\=  ((" + RESET);
+            // System.out.println(PINK + "    __) (__" + RESET);
+            // System.out.println(PINK + "  ,'  \\_/  `." + RESET);
+            // System.out.println(PINK + " /    :|:    \\" + RESET);
+            System.out.println(banner);
+            // Command hints
+            System.out.println(BOLD_GREEN + "Type" + BOLD_YELLOW +" 'help' " + BOLD_GREEN + "for available commands or" + BOLD_RED + "'exit'"+ BOLD_GREEN + "to quit" + RESET);
+            System.out.println(BOLD_CYAN + "Quick Start: Try " + BOLD_YELLOW + "get your_api.com/todos/1" + RESET);
+            System.out.println();
+        } catch (Exception e) {
+            System.out.println("==== curlbaby ====");
+            System.out.println("(Failed to load figlet font)");
+            e.printStackTrace();
+        }
     }
     
     public void printPrompt() {
