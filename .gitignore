@@ -1,3 +1,5 @@
+curlbaby/target/
+curlbaby/lib/*.jar
 client/lib
-curlbaby/target 
 backup
+*.class
