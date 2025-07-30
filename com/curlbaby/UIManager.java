@@ -33,6 +33,7 @@ public class UIManager {
             // System.out.println(PINK + "  ,'  \\_/  `." + RESET);
             // System.out.println(PINK + " /    :|:    \\" + RESET);
             System.out.println(banner);
+            
             // Command hints
             System.out.println(BOLD_GREEN + "Type" + BOLD_YELLOW +" 'help' " + BOLD_GREEN + "for available commands or" + BOLD_RED + "'exit'"+ BOLD_GREEN + "to quit" + RESET);
             System.out.println(BOLD_CYAN + "Quick Start: Try " + BOLD_YELLOW + "get your_api.com/todos/1" + RESET);
@@ -77,8 +78,12 @@ public class UIManager {
         System.out.println(YELLOW + "⚠ " + message + RESET);
     }
     
+    public void printInfoHeading(String message) {
+        System.out.println(BOLD_YELLOW + message + RESET);
+    }
+
     public void printInfo(String message) {
-        System.out.println(CYAN + "ℹ " + message + RESET);
+        System.out.println(CYAN + "i" + message + RESET);
     }
     
     public void printSuccess(String message) {
